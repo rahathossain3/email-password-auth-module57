@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Form from 'react-bootstrap/Form'
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import app from './firebase.init';
 import Button from 'react-bootstrap/Button';
 import { useState } from 'react';
@@ -94,6 +94,10 @@ function App() {
           console.log(user);
           setEmail('');
           setPassword('');
+
+          // verify email call
+          verifyEmail();
+
         })
         //any error
         .catch(error => {
@@ -104,9 +108,26 @@ function App() {
     }
 
 
-
     event.preventDefault();
   }
+
+  // for password reset--------------
+  const handlePasswordReset = () => {
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        console.log('email sent')
+      })
+  }
+
+
+  // for email verify by sending email ----
+  const verifyEmail = () => {
+    sendEmailVerification(auth.currentUser)
+      .then(() => {
+        console.log("email Verification Send")
+      })
+  }
+
 
 
   return (
@@ -150,6 +171,10 @@ function App() {
 
 
           <p className='text-danger'>{error}</p>
+
+          {/* forgat password----------------- */}
+          <Button onClick={handlePasswordReset} variant="link">Forger Password</Button>
+          <br />
 
           <Button variant="primary" type="submit">
             {registered ? 'Login' : 'Register'}
