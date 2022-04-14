@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Form from 'react-bootstrap/Form'
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import app from './firebase.init';
 import Button from 'react-bootstrap/Button';
 import { useState } from 'react';
@@ -11,6 +11,13 @@ const auth = getAuth(app);
 
 
 function App() {
+
+  //for registered-------------
+  const [registered, setRegistered] = useState(false);
+
+  //for validated -----
+  const [validated, setValidated] = useState(false);
+
   // for get email
   const [email, setEmail] = useState('');
 
@@ -20,8 +27,7 @@ function App() {
   // for get password 
   const [password, setPassword] = useState('');
 
-  //for validated -----
-  const [validated, setValidated] = useState(false);
+
 
 
 
@@ -34,6 +40,12 @@ function App() {
   const handlePasswordBlur = event => {
     setPassword(event.target.value);
   }
+
+  //--- for registered
+  const handelRegisteredChange = event => {
+    setRegistered(event.target.checked);
+  }
+
 
 
   // for form
@@ -56,20 +68,42 @@ function App() {
     setValidated(true);
     setError('')
 
+    // for login condition
+    if (registered) {
+      //for login
+      signInWithEmailAndPassword(auth, email, password)
+        .then(result => {
+          const user = result.user;
+          console.log(user);
+        })
+        // for error
+        .catch(error => {
+          console.log(error);
+          setError(error.message);
+        })
+    }
+
+    //for create user condition
+    else {
+
+      // create new user
+      createUserWithEmailAndPassword(auth, email, password)
+        //success 
+        .then(result => {
+          const user = result.user;
+          console.log(user);
+          setEmail('');
+          setPassword('');
+        })
+        //any error
+        .catch(error => {
+          console.error(error)
+          setError(error.message);
+        })
+
+    }
 
 
-
-    // create new user
-    createUserWithEmailAndPassword(auth, email, password)
-      //success 
-      .then(result => {
-        const user = result.user;
-        console.log(user);
-      })
-      //any error
-      .catch(error => {
-        console.error(error)
-      })
 
     event.preventDefault();
   }
@@ -79,7 +113,7 @@ function App() {
     <div>
 
       <div className="registration w-50 mx-auto mt-5">
-        <h2 className='text-primary'>Please Register!!</h2>
+        <h2 className='text-primary'>Please {registered ? 'Login' : 'Register'}!!</h2>
 
         <Form noValidate validated={validated} onSubmit={handleFromSubmit}>
 
@@ -110,10 +144,15 @@ function App() {
 
           </Form.Group>
 
+          <Form.Group className="mb-3" controlId="formBasicCheckbox">
+            <Form.Check onChange={handelRegisteredChange} type="checkbox" label="Already Registered?" />
+          </Form.Group>
+
+
           <p className='text-danger'>{error}</p>
 
           <Button variant="primary" type="submit">
-            Submit
+            {registered ? 'Login' : 'Register'}
           </Button>
         </Form>
 
